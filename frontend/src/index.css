@@ -1,0 +1,118 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Global base ─────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #0A0A0F;
+    color: #E2E8F0;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: 'Syne', sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar        { width: 6px; }
+  ::-webkit-scrollbar-track  { background: #0A0A0F; }
+  ::-webkit-scrollbar-thumb  { background: #2A2A3E; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #7C3AED; }
+}
+
+/* ── Utility classes ─────────────────────────────────────────────────────── */
+@layer components {
+  /* Glowing purple border on focus / active */
+  .glow-border {
+    border: 1px solid #2A2A3E;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .glow-border:focus-within,
+  .glow-border:hover {
+    border-color: #7C3AED;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+  }
+
+  /* Purple gradient button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-violet-600 hover:bg-violet-500 active:bg-violet-700
+           text-white font-semibold rounded-xl px-5 py-2.5
+           transition-all duration-200 cursor-pointer
+           disabled:opacity-40 disabled:cursor-not-allowed;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           border border-forge-border hover:border-violet-500
+           text-forge-muted hover:text-forge-text
+           rounded-xl px-5 py-2.5
+           transition-all duration-200 cursor-pointer;
+    font-family: 'Syne', sans-serif;
+  }
+
+  /* Card / panel */
+  .forge-card {
+    @apply bg-forge-card border border-forge-border rounded-2xl;
+  }
+
+  /* Trait slider custom styling */
+  input[type='range'] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 9999px;
+    background: #2A2A3E;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #7C3AED;
+    box-shadow: 0 0 6px rgba(124, 58, 237, 0.6);
+    transition: transform 0.15s;
+  }
+  input[type='range']::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+}
+
+/* ── Noise texture overlay (adds depth) ─────────────────────────────────── */
+.noise-overlay::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+}
+
+/* Typing indicator dots */
+.typing-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: #7C3AED;
+  border-radius: 50%;
+  animation: typing 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
