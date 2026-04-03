@@ -1,112 +1,105 @@
-# 🔮 PersonaForge AI — Dynamic Personality Simulator
+# 🧠 AntarMan AI — Dynamic Personality Simulator
 
-> Create, customize, and chat with AI personalities that evolve as you talk to them.
+AntarMan AI is a MERN + AI powered system that allows users to create, customize, and interact with dynamic AI personalities that evolve over time.
+
+---
+
+## 🚀 Features
+
+* 🎭 Create custom AI personalities using traits
+* 🧠 Trait-based behavior simulation (confidence, empathy, aggression, humor)
+* 💬 Real-time chat with AI personas
+* 🔄 Personality evolution based on user interaction
+* 🧩 Modular AI system (prompt builder + evolution engine)
+* 🎨 Modern UI with Tailwind CSS
+
+---
+
+## 📸 Preview
+
+
+### 🏠 Home Screen
+![Home](./assets/home.png) 
+
+### 💬 Chat Interface
+![Chat](./assets/chat.png)
+
+### 🎭 Persona Builder
+![Persona](./assets/persona.png)
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+
+* React (Vite)
+* Tailwind CSS
+
+### Backend
+
+* Node.js
+* Express.js
+* MongoDB (Mongoose)
+
+### AI
+
+* OpenAI API (or Groq)
 
 ---
 
 ## 📁 Folder Structure
 
-```
-personaforge/
-│
-├── backend/                     # Node.js + Express API
-│   ├── models/
-│   │   ├── Persona.js           # Mongoose schema for personas
-│   │   └── Chat.js              # Mongoose schema for chat sessions
-│   ├── routes/
-│   │   ├── persona.js           # CRUD endpoints for personas
-│   │   └── chat.js              # Chat + evolution endpoints
-│   ├── utils/
-│   │   ├── promptBuilder.js     # Converts traits → system prompt
-│   │   ├── evolutionEngine.js   # Analyses user tone → adjusts traits
-│   │   └── openaiService.js     # OpenAI API wrapper
-│   ├── server.js                # Express entry point
-│   ├── .env.example             # Environment variable template
-│   └── package.json
-│
-├── frontend/                    # React + Vite + Tailwind CSS
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Layout.jsx           # Nav bar + page wrapper
-│   │   │   ├── PersonaBuilder.jsx   # Trait sliders + create form
-│   │   │   ├── PersonaCard.jsx      # Persona preview card
-│   │   │   ├── MessageBubble.jsx    # Individual chat message
-│   │   │   ├── TypingIndicator.jsx  # Animated "AI is thinking" dots
-│   │   │   ├── TraitSlider.jsx      # Single trait slider with label
-│   │   │   └── TraitEvolutionPanel.jsx  # Live trait evolution display
-│   │   ├── pages/
-│   │   │   ├── HomePage.jsx     # Persona builder + list
-│   │   │   └── ChatPage.jsx     # Full chat interface
-│   │   ├── utils/
-│   │   │   └── api.js           # Axios API helper functions
-│   │   ├── App.jsx              # Router setup
-│   │   ├── main.jsx             # React entry point
-│   │   └── index.css            # Tailwind + global styles
-│   ├── index.html
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   └── package.json
-│
-└── README.md                    # ← You are here
+```bash
+backend/
+  models/
+  routes/
+  utils/
+  middleware/
+  server.js
+
+frontend/
+  src/
+  index.html
 ```
 
 ---
 
-## 🚀 How to Run the Project
+## ⚙️ Setup Instructions
 
-### Prerequisites
+### 1️⃣ Clone the repository
 
-Make sure you have these installed:
-
-- [Node.js](https://nodejs.org/) v18 or later
-- [MongoDB](https://www.mongodb.com/try/download/community) (local) OR a free [MongoDB Atlas](https://cloud.mongodb.com/) cluster
-- An [OpenAI API key](https://platform.openai.com/api-keys)
+```bash
+git clone (https://github.com/krishanumishra21/Antarman-ai)
+cd antarman-ai
+```
 
 ---
 
-### Step 1 — Set up the Backend
+### 2️⃣ Backend Setup
 
 ```bash
 cd backend
 npm install
 ```
 
-Copy the environment template and fill in your values:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
+Create a `.env` file:
 
 ```env
+MONGO_URI=your_mongodb_url
+OPENAI_API_KEY=your_api_key
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/personaforge
-OPENAI_API_KEY=sk-...your-key-here...
-OPENAI_MODEL=gpt-4o
 ```
 
-Start the backend:
+Run backend:
 
 ```bash
-# Development (auto-restarts on file changes)
-npm run dev
-
-# OR production
 npm start
-```
-
-You should see:
-```
-✅  MongoDB connected
-🚀  PersonaForge API running on http://localhost:5000
 ```
 
 ---
 
-### Step 2 — Set up the Frontend
-
-In a **new terminal**:
+### 3️⃣ Frontend Setup
 
 ```bash
 cd frontend
@@ -114,69 +107,38 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+---
+
+## 🔐 Environment Variables
+
+See `.env.example` for required variables.
 
 ---
 
-## 🔌 API Endpoints
+## 🧠 How It Works
 
-| Method | Endpoint                    | Description                          |
-|--------|-----------------------------|--------------------------------------|
-| POST   | `/persona/create`           | Create a new persona                 |
-| GET    | `/persona/all`              | List all personas                    |
-| GET    | `/persona/:id`              | Get a single persona                 |
-| DELETE | `/persona/:id`              | Delete a persona                     |
-| POST   | `/chat/:personaId`          | Send a message, get AI reply         |
-| GET    | `/chat/:personaId/history`  | Get all chat sessions for a persona  |
-| GET    | `/chat/session/:chatId`     | Get a specific chat session          |
-| GET    | `/health`                   | Server + DB health check             |
+1. User creates a persona using traits
+2. Traits are converted into AI behavior using prompt engineering
+3. AI responds based on personality
+4. Evolution engine updates traits dynamically
 
 ---
 
-## 🧠 How the AI Personality Engine Works
+## 🌐 Future Improvements
 
-### Trait → Prompt Mapping
-
-Each trait slider (0–100) produces different language in the system prompt:
-
-| Trait      | Low (0–25)         | High (75–100)            |
-|------------|--------------------|--------------------------|
-| Confidence | Hesitant, uncertain | Bold, declarative, direct |
-| Empathy    | Cold, fact-focused  | Warm, emotionally attuned |
-| Aggression | Gentle, peaceful    | Blunt, confrontational    |
-| Humor      | Completely serious  | Witty, joke-heavy         |
-
-### Evolution Logic
-
-After each user message, the backend analyses the user's tone with keyword detection:
-
-- **Aggressive language** → aggression +3, empathy -2
-- **Logical reasoning** → aggression -2, confidence +2  
-- **Kind words** → empathy +3, aggression -2, humor +1
-- **Humor / laughing** → humor +3, aggression -1
-- **Negativity** → empathy +2, confidence -1
-
-Changes are small (1–4 points) so evolution feels gradual and natural. The frontend sidebar shows live deltas with `+N` / `-N` indicators.
-
-### Memory Window
-
-The last **10 messages** are included in every OpenAI API call so the persona remembers the recent conversation context.
+* Mood detection system
+* Voice-based interaction
+* Multi-persona conversations
+* Scenario-based simulations (interview, debate, therapy)
 
 ---
 
-## ⚙️ Configuration
+## 👨‍💻 Author
 
-| Variable        | Default                                   | Description              |
-|-----------------|-------------------------------------------|--------------------------|
-| `PORT`          | `5000`                                    | Backend server port      |
-| `MONGODB_URI`   | `mongodb://localhost:27017/personaforge`  | MongoDB connection string |
-| `OPENAI_API_KEY`| —                                         | Your OpenAI API key      |
-| `OPENAI_MODEL`  | `gpt-4o`                                  | Model to use             |
+**Krishanu Mishra**
 
 ---
 
-## 💡 Tips
+## ⭐ Show your support
 
-- **MongoDB Atlas** (free tier): Replace `MONGODB_URI` with your Atlas connection string.
-- **GPT-3.5**: Change `OPENAI_MODEL=gpt-3.5-turbo` to reduce API costs during development.
-- **Production**: Set `VITE_API_BASE_URL=https://your-backend.com` in `frontend/.env` and update CORS origins in `server.js`.
+If you like this project, give it a ⭐ on GitHub!
