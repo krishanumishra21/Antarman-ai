@@ -1,7 +1,7 @@
 # 🧠 AntarMan AI — Dynamic Personality Simulator
 
 AntarMan AI is a MERN + AI powered system that allows users to create, customize, and interact with dynamic AI personalities that evolve over time.
-
+                                                 
 ---
 
 ## 🚀 Features
@@ -134,8 +134,7 @@ See `.env.example` for required variables.
 ---
 
 ## 👨‍💻 Author
-
-**Krishanu Mishra**
+Krishanu Mishra
 
 ---
 
