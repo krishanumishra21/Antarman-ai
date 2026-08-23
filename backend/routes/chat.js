@@ -30,7 +30,8 @@ router.post("/:personaId", async (req, res) => {
     const systemPrompt  = buildSystemPrompt(persona);
     const recentHistory = chat.messages.slice(-MEMORY_WINDOW);
     const aiReply       = await getChatCompletion(systemPrompt, recentHistory, message.trim());
-    const updatedTraits = evolveTraits(persona.traits, message);
+    const plainTraits   = persona.traits.toObject ? persona.traits.toObject() : { ...persona.traits };
+    const updatedTraits = evolveTraits(plainTraits, message);
 
     persona.traits = updatedTraits;
     await persona.save();
@@ -43,7 +44,8 @@ router.post("/:personaId", async (req, res) => {
     res.json({ reply: aiReply, chatId: chat._id, updatedTraits });
   } catch (err) {
     console.error("Chat error:", err);
-    res.status(500).json({ error: "Something went wrong while processing your message." });
+    const detail = err?.response?.data?.error?.message || err?.message || "Unknown error";
+    res.status(500).json({ error: `Something went wrong: ${detail}` });
   }
 });
 

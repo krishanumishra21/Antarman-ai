@@ -12,14 +12,20 @@ async function getChatCompletion(systemPrompt, history, userMessage) {
     { role: "user",      content: userMessage },
   ];
 
-  const response = await openai.chat.completions.create({
-    model:       process.env.OPENAI_MODEL || "llama3-8b-8192",
-    messages,
-    max_tokens:  500,
-    temperature: 0.85,
-  });
+  try {
+    const response = await openai.chat.completions.create({
+      model:       process.env.OPENAI_MODEL || "openai/gpt-oss-20b",
+      messages,
+      max_tokens:  1024,
+      temperature: 0.85,
+    });
 
-  return response.choices[0].message.content.trim();
+    return response.choices[0].message.content.trim();
+  } catch (err) {
+    console.error("Groq API error:", err?.status, err?.message);
+    if (err?.error?.message) console.error("Detail:", err.error.message);
+    throw err;
+  }
 }
 
 module.exports = { getChatCompletion };
