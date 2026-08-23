@@ -7,10 +7,38 @@ export default defineConfig({
     port: 5173,
     // Proxy API requests to the Express backend during development
     proxy: {
-      "/auth":    "http://localhost:5000",
-      "/persona": "http://localhost:5000",
-      "/chat":    "http://localhost:5000",
-      "/health":  "http://localhost:5000",
+      "/auth": {
+        target: "http://localhost:5000",
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) {
+            return "/index.html";
+          }
+        }
+      },
+      "/persona": {
+        target: "http://localhost:5000",
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) {
+            return "/index.html";
+          }
+        }
+      },
+      "/chat": {
+        target: "http://localhost:5000",
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) {
+            return "/index.html";
+          }
+        }
+      },
+      "/health": {
+        target: "http://localhost:5000",
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) {
+            return "/index.html";
+          }
+        }
+      },
     },
   },
 });

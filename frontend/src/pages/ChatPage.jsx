@@ -21,6 +21,8 @@ export default function ChatPage() {
   const [chatId,        setChatId]        = useState(null);
   const [currentTraits, setCurrentTraits] = useState(null);
   const [initialTraits, setInitialTraits] = useState(null);
+  const [traitHistory,  setTraitHistory]  = useState([]);
+  const [showMenu,      setShowMenu]      = useState(false);
   const [error,         setError]         = useState("");
   const [loading,       setLoading]       = useState(true);
 
@@ -38,6 +40,7 @@ export default function ChatPage() {
         setPersona(data.persona);
         setCurrentTraits({ ...data.persona.traits });
         setInitialTraits({ ...data.persona.traits });
+        setTraitHistory([{ ...data.persona.traits }]);
       } catch {
         setError("Persona not found.");
       } finally {
@@ -85,6 +88,7 @@ export default function ChatPage() {
       // Update evolved traits
       if (data.updatedTraits) {
         setCurrentTraits(data.updatedTraits);
+        setTraitHistory((prev) => [...prev, data.updatedTraits]);
       }
     } catch (err) {
       setError(err.response?.data?.error || "Failed to send message. Check your backend.");
@@ -110,12 +114,83 @@ export default function ChatPage() {
     setMessages([]);
     setChatId(null);
     setCurrentTraits(initialTraits ? { ...initialTraits } : null);
+    setTraitHistory(initialTraits ? [{ ...initialTraits }] : []);
+  };
+
+  // ── Export conversation to Markdown (.md) ──────────────────────────────
+  const exportToMarkdown = () => {
+    if (messages.length === 0) return alert("No messages to export!");
+    
+    let content = `# Antarman Conversation Transcript with ${persona.name}\n\n`;
+    content += `**Export Date**: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}\n`;
+    content += `**Persona**: ${persona.name}\n`;
+    content += `**Description**: ${persona.description || "No description provided."}\n\n`;
+    
+    content += `## Evolution of Personality Traits\n\n`;
+    content += `| Trait | Starting Value | Final Value | Change |\n`;
+    content += `| :--- | :---: | :---: | :---: |\n`;
+    const getDeltaString = (key) => {
+      const delta = (currentTraits?.[key] ?? 50) - (initialTraits?.[key] ?? 50);
+      return delta > 0 ? `+${delta}` : `${delta}`;
+    };
+    content += `| Confidence | ${initialTraits?.confidence ?? 50}/100 | ${currentTraits?.confidence ?? 50}/100 | ${getDeltaString("confidence")} |\n`;
+    content += `| Empathy | ${initialTraits?.empathy ?? 50}/100 | ${currentTraits?.empathy ?? 50}/100 | ${getDeltaString("empathy")} |\n`;
+    content += `| Aggression | ${initialTraits?.aggression ?? 50}/100 | ${currentTraits?.aggression ?? 50}/100 | ${getDeltaString("aggression")} |\n`;
+    content += `| Humor | ${initialTraits?.humor ?? 50}/100 | ${currentTraits?.humor ?? 50}/100 | ${getDeltaString("humor")} |\n\n`;
+    
+    content += `## Transcript Details\n\n`;
+    messages.forEach((msg, idx) => {
+      const sender = msg.role === "user" ? "User" : persona.name;
+      content += `**[Turn ${idx + 1}] ${sender}**:\n`;
+      content += `> ${msg.content}\n\n`;
+    });
+    
+    const blob = new Blob([content], { type: "text/markdown;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `antarman_${persona.name.toLowerCase().replace(/\s+/g, '_')}_transcript.md`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // ── Export conversation to JSON (.json) ────────────────────────────────
+  const exportToJSON = () => {
+    if (messages.length === 0) return alert("No messages to export!");
+    
+    const data = {
+      exportTimestamp: new Date().toISOString(),
+      persona: {
+        id: persona._id,
+        name: persona.name,
+        description: persona.description,
+        initialTraits,
+        finalTraits: currentTraits,
+        traitHistory
+      },
+      messages: messages.map((m, idx) => ({
+        turn: idx + 1,
+        sender: m.role,
+        content: m.content,
+        timestamp: m.timestamp
+      }))
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `antarman_${persona.name.toLowerCase().replace(/\s+/g, '_')}_data.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // ── Loading / error states ───────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-64px)] text-forge-muted gap-3">
+      <div className="flex items-center justify-center h-[calc(100vh-64px)] text-forge-muted gap-3 bg-forge-bg">
         <span className="w-6 h-6 border-2 border-violet-600/30 border-t-violet-500 rounded-full animate-spin" />
         Loading persona…
       </div>
@@ -124,7 +199,7 @@ export default function ChatPage() {
 
   if (!persona) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] gap-4 text-center">
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] gap-4 text-center bg-forge-bg">
         <p className="text-2xl">😶</p>
         <p className="text-forge-muted">Persona not found.</p>
         <Link to="/" className="btn-primary">← Back to Home</Link>
@@ -135,11 +210,11 @@ export default function ChatPage() {
   const userMessageCount = messages.filter((m) => m.role === "user").length;
 
   return (
-    <div className="flex h-[calc(100vh-64px)] overflow-hidden">
+    <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-forge-bg relative noise-overlay">
 
       {/* ── Left sidebar: persona info + trait evolution ── */}
       <aside className="hidden lg:flex flex-col w-72 flex-shrink-0 border-r border-forge-border
-                        bg-forge-surface p-4 gap-4 overflow-y-auto">
+                        bg-forge-surface/50 backdrop-blur-md p-4 gap-4 overflow-y-auto z-10">
 
         {/* Back link */}
         <Link
@@ -154,21 +229,24 @@ export default function ChatPage() {
         </Link>
 
         {/* Persona info card */}
-        <div className="forge-card p-4 space-y-2">
+        <div className="forge-card p-4 space-y-2 bg-forge-card/40 backdrop-blur-sm shadow-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-violet-600/20 border border-violet-600/30
-                            flex items-center justify-center">
+                            flex items-center justify-center shadow-inner">
               <span className="text-violet-300 font-display font-bold">
                 {persona.name.charAt(0).toUpperCase()}
               </span>
             </div>
             <div>
-              <p className="font-display font-bold text-forge-text">{persona.name}</p>
-              <p className="text-xs text-violet-400">Active</p>
+              <p className="font-display font-bold text-forge-text text-sm">{persona.name}</p>
+              <p className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Active Simulator
+              </p>
             </div>
           </div>
           {persona.description && (
-            <p className="text-xs text-forge-muted leading-relaxed">{persona.description}</p>
+            <p className="text-xs text-forge-muted leading-relaxed pt-1.5 border-t border-forge-border/40">{persona.description}</p>
           )}
         </div>
 
@@ -177,61 +255,134 @@ export default function ChatPage() {
           currentTraits={currentTraits}
           initialTraits={initialTraits}
           messageCount={userMessageCount}
+          traitHistory={traitHistory}
         />
 
-        {/* Clear chat button */}
+        {/* Sidebar Actions */}
         {messages.length > 0 && (
-          <button
-            onClick={handleClear}
-            className="btn-ghost text-sm w-full mt-auto"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            New Conversation
-          </button>
+          <div className="mt-auto space-y-2 border-t border-forge-border/40 pt-3">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={exportToMarkdown}
+                className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border border-forge-border bg-forge-card/40 hover:bg-violet-600/10 hover:border-violet-500 hover:text-forge-text text-[11px] font-semibold text-forge-muted transition-all cursor-pointer"
+                title="Export transcript to Markdown"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="w-3.5 h-3.5">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                  <path d="M14 2v6h6M16 13H8M16 17H8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Markdown
+              </button>
+              <button
+                onClick={exportToJSON}
+                className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border border-forge-border bg-forge-card/40 hover:bg-violet-600/10 hover:border-violet-500 hover:text-forge-text text-[11px] font-semibold text-forge-muted transition-all cursor-pointer"
+                title="Export raw JSON logs"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="w-3.5 h-3.5">
+                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                </svg>
+                JSON Data
+              </button>
+            </div>
+            <button
+              onClick={handleClear}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-950 bg-red-950/10 hover:bg-red-900/20 hover:border-red-650 transition-all text-xs font-semibold text-red-400 cursor-pointer"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M4 7h16" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              New Session
+            </button>
+          </div>
         )}
       </aside>
 
       {/* ── Main chat area ── */}
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 bg-forge-bg z-10">
 
         {/* Chat header */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-forge-border
-                        bg-forge-bg/80 backdrop-blur-md flex-shrink-0">
-          {/* Mobile back button */}
-          <Link to="/" className="lg:hidden text-forge-muted hover:text-forge-text">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-              <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
-
-          <div className="w-9 h-9 rounded-xl bg-violet-600/20 border border-violet-600/30
-                          flex items-center justify-center">
-            <span className="text-violet-300 font-display font-bold text-sm">
-              {persona.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <p className="font-display font-bold text-forge-text truncate">{persona.name}</p>
-            <p className="text-xs text-emerald-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
-              Online
-            </p>
-          </div>
-
-          {/* Mobile: clear chat */}
-          {messages.length > 0 && (
-            <button
-              onClick={handleClear}
-              className="text-forge-muted hover:text-red-400 transition-colors"
-              title="New conversation"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5">
-                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round"/>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-forge-border
+                        bg-forge-surface/40 backdrop-blur-md flex-shrink-0 z-20">
+          <div className="flex items-center gap-3">
+            {/* Mobile back button */}
+            <Link to="/" className="lg:hidden text-forge-muted hover:text-forge-text">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-            </button>
+            </Link>
+
+            <div className="w-9 h-9 rounded-xl bg-violet-600/20 border border-violet-600/30
+                            flex items-center justify-center shadow-md">
+              <span className="text-violet-300 font-display font-bold text-sm">
+                {persona.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <p className="font-display font-bold text-forge-text text-sm truncate">{persona.name}</p>
+              <p className="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
+                Simulator Online
+              </p>
+            </div>
+          </div>
+
+          {/* Options Dropdown for mobile and desktop header */}
+          {messages.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu((prev) => !prev)}
+                className="w-9 h-9 flex items-center justify-center rounded-xl border border-forge-border hover:border-violet-500 bg-forge-card hover:bg-violet-600/10 text-forge-muted hover:text-forge-text transition-all cursor-pointer"
+                title="Export & Session settings"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+                  <circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="19" r="1.5" />
+                </svg>
+              </button>
+              
+              {showMenu && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setShowMenu(false)} />
+                  <div className="absolute right-0 mt-2 w-48 bg-forge-card border border-forge-border rounded-xl shadow-xl z-40 py-1.5 animate-fade-up">
+                    <div className="px-3 py-1.5 text-[9px] uppercase font-bold text-forge-muted tracking-wider border-b border-forge-border/40">
+                      Export Analysis
+                    </div>
+                    <button
+                      onClick={() => { exportToMarkdown(); setShowMenu(false); }}
+                      className="w-full text-left px-3 py-2.5 text-xs text-forge-text hover:bg-violet-650 hover:bg-violet-600 hover:text-white transition-colors flex items-center gap-2 cursor-pointer"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <path d="M14 2v6h6M16 13H8M16 17H8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      Download MD (.md)
+                    </button>
+                    <button
+                      onClick={() => { exportToJSON(); setShowMenu(false); }}
+                      className="w-full text-left px-3 py-2.5 text-xs text-forge-text hover:bg-violet-650 hover:bg-violet-600 hover:text-white transition-colors flex items-center gap-2 cursor-pointer"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                        <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                      </svg>
+                      Download Data (.json)
+                    </button>
+                    
+                    <div className="border-t border-forge-border/40 my-1" />
+                    <button
+                      onClick={() => { handleClear(); setShowMenu(false); }}
+                      className="w-full text-left px-3 py-2.5 text-xs text-red-400 hover:bg-red-600 hover:text-white transition-colors flex items-center gap-2 cursor-pointer font-semibold"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      New Session
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </div>
 

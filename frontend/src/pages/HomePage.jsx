@@ -44,49 +44,52 @@ export default function HomePage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="max-w-6xl mx-auto px-6 py-10 relative z-10 noise-overlay">
+      {/* Background ambient lighting */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-violet-600/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+
       {/* ── Hero header ── */}
-      <div className="mb-10 text-center">
-        <div className="inline-flex items-center gap-2 bg-violet-600/10 border border-violet-600/20
-                        rounded-full px-4 py-1.5 text-violet-400 text-xs font-semibold mb-4 font-display uppercase tracking-wider">
+      <div className="mb-12 text-center animate-fade-up">
+        <div className="inline-flex items-center gap-2 bg-violet-650/10 border border-violet-500/20
+                        rounded-full px-4.5 py-1.5 text-violet-400 text-[10px] font-bold tracking-widest mb-5 font-display uppercase shadow-inner">
           <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-          AI Personality Simulator
+          Neural Co-Evolution Engine
         </div>
-        <h1 className="font-display font-extrabold text-4xl md:text-5xl text-forge-text leading-tight">
+        <h1 className="font-display font-black text-4xl md:text-5xl text-forge-text leading-tight tracking-tight select-none">
           Forge Your AI{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-300">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-indigo-300 to-purple-400">
             Personalities
           </span>
         </h1>
-        <p className="text-forge-muted mt-3 text-lg max-w-xl mx-auto">
-          Create unique AI personas with custom traits. Watch them evolve as you chat.
+        <p className="text-forge-muted mt-3 text-sm md:text-base max-w-lg mx-auto font-medium leading-relaxed">
+          Create custom AI personas, configure their starting neural parameters, and witness quantitative traits adapt to conversational tone.
         </p>
       </div>
 
       {/* ── Two-column layout ── */}
       <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 items-start">
         {/* ── Left: Builder ── */}
-        <div className="sticky top-24">
+        <div className="sticky top-24 z-20">
           <PersonaBuilder onCreated={handleCreated} />
         </div>
 
         {/* ── Right: Persona list ── */}
-        <div>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-display font-bold text-lg text-forge-text">
-              Your Personas
+        <div className="space-y-5">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-display font-extrabold text-base text-forge-text tracking-wide select-none">
+              Configured Personas
               {personas.length > 0 && (
-                <span className="ml-2 text-sm font-normal text-forge-muted">
-                  ({personas.length})
+                <span className="ml-2 text-xs font-mono font-bold text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md border border-violet-500/10">
+                  {personas.length}
                 </span>
               )}
             </h2>
             <button
               onClick={fetchPersonas}
-              className="btn-ghost text-sm py-1.5 px-3"
-              title="Refresh"
+              className="flex items-center gap-1.5 py-1.5 px-3.5 rounded-xl border border-forge-border bg-forge-card/45 hover:bg-violet-600/10 hover:border-violet-500 hover:text-forge-text text-xs font-semibold text-forge-muted transition-all cursor-pointer shadow-sm"
+              title="Refresh list"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="w-3.5 h-3.5">
                 <path d="M4 4v5h5M20 20v-5h-5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M4 9a8 8 0 0114.54-3M20 15a8 8 0 01-14.54 3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>

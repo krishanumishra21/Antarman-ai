@@ -1,6 +1,5 @@
-// src/components/TraitEvolutionPanel.jsx
-// Shows the live/updated trait values in the chat sidebar.
-// Highlights traits that changed since the conversation started.
+import { useState } from "react";
+import TraitHistoryChart from "./TraitHistoryChart";
 
 const TRAIT_META = {
   confidence: { icon: "⚡", label: "Confidence", fill: "#eab308" },
@@ -15,7 +14,7 @@ function TraitRow({ traitKey, value, initialValue }) {
   const changed = Math.abs(delta) >= 1;
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5 animate-fade-up">
       {/* Label + value */}
       <div className="flex items-center justify-between text-xs">
         <span className="flex items-center gap-1.5 text-forge-muted font-medium">
@@ -45,7 +44,9 @@ function TraitRow({ traitKey, value, initialValue }) {
   );
 }
 
-export default function TraitEvolutionPanel({ currentTraits, initialTraits, messageCount }) {
+export default function TraitEvolutionPanel({ currentTraits, initialTraits, messageCount, traitHistory = [] }) {
+  const [activeTab, setActiveTab] = useState("sliders"); // "sliders" or "analytics"
+
   if (!currentTraits) return null;
 
   const hasEvolved = Object.keys(currentTraits).some(
@@ -60,23 +61,53 @@ export default function TraitEvolutionPanel({ currentTraits, initialTraits, mess
           Trait Evolution
         </h3>
         {hasEvolved && (
-          <span className="text-xs px-2 py-0.5 rounded-full bg-violet-600/20 text-violet-400 border border-violet-600/30">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-600/20 text-violet-400 border border-violet-600/30">
             Evolved
           </span>
         )}
       </div>
 
-      {/* Trait rows */}
-      <div className="space-y-3">
-        {Object.entries(currentTraits).map(([key, val]) => (
-          <TraitRow
-            key={key}
-            traitKey={key}
-            value={val}
-            initialValue={initialTraits?.[key] ?? val}
-          />
-        ))}
+      {/* Navigation Tabs */}
+      <div className="flex bg-forge-bg rounded-xl p-1 border border-forge-border">
+        <button
+          onClick={() => setActiveTab("sliders")}
+          className={`flex-1 text-center py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-250 cursor-pointer
+            ${activeTab === "sliders"
+              ? "bg-violet-600 text-white shadow-md shadow-violet-950/50"
+              : "text-forge-muted hover:text-forge-text"
+            }`}
+        >
+          Sliders
+        </button>
+        <button
+          onClick={() => setActiveTab("analytics")}
+          className={`flex-1 text-center py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-250 cursor-pointer
+            ${activeTab === "analytics"
+              ? "bg-violet-600 text-white shadow-md shadow-violet-950/50"
+              : "text-forge-muted hover:text-forge-text"
+            }`}
+        >
+          Analytics
+        </button>
       </div>
+
+      {/* Content Rendering depending on Active Tab */}
+      {activeTab === "sliders" ? (
+        <div className="space-y-3.5">
+          {Object.entries(currentTraits).map(([key, val]) => (
+            <TraitRow
+              key={key}
+              traitKey={key}
+              value={val}
+              initialValue={initialTraits?.[key] ?? val}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="animate-fade-up">
+          <TraitHistoryChart traitHistory={traitHistory} />
+        </div>
+      )}
 
       {/* Message count */}
       {messageCount > 0 && (

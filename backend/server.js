@@ -19,8 +19,14 @@ const PORT = process.env.PORT || 5000;
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Allow requests from the React frontend (adjust origin in production)
+const allowedOrigins = ["http://localhost:5173", "http://localhost:3000"];
+if (process.env.FRONTEND_URL) {
+  const urls = process.env.FRONTEND_URL.split(",").map(url => url.trim());
+  allowedOrigins.push(...urls);
+}
+
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000"],
+  origin: allowedOrigins,
   credentials: true,
 }));
 

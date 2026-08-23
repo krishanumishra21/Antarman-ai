@@ -83,18 +83,21 @@ export default function PersonaBuilder({ onCreated }) {
   };
 
   return (
-    <div className="forge-card p-6 space-y-6">
+    <div className="forge-card p-6 space-y-6 bg-forge-card/40 backdrop-blur-md border border-forge-border/80 shadow-xl relative overflow-hidden">
+      {/* Subtle card header glare line */}
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
+
       {/* Section title */}
       <div>
-        <h2 className="font-display font-bold text-xl text-forge-text">Build a Persona</h2>
-        <p className="text-forge-muted text-sm mt-1">
-          Craft an AI personality with unique traits that evolve as you chat.
+        <h2 className="font-display font-extrabold text-lg text-forge-text tracking-wide">Build a Persona</h2>
+        <p className="text-forge-muted text-xs mt-1 leading-relaxed">
+          Craft an AI personality with unique traits that evolve dynamically as you converse.
         </p>
       </div>
 
       {/* Preset buttons */}
-      <div>
-        <p className="text-xs text-forge-muted font-semibold uppercase tracking-widest mb-2">
+      <div className="space-y-2">
+        <p className="text-[10px] text-forge-muted font-bold uppercase tracking-widest">
           Quick Presets
         </p>
         <div className="grid grid-cols-2 gap-2">
@@ -102,9 +105,9 @@ export default function PersonaBuilder({ onCreated }) {
             <button
               key={p.label}
               onClick={() => applyPreset(p)}
-              className="text-left text-xs px-3 py-2 rounded-xl border border-forge-border
-                         hover:border-violet-600/50 hover:bg-violet-600/10 text-forge-muted
-                         hover:text-forge-text transition-all duration-150"
+              className="text-left text-xs px-3 py-2.5 rounded-xl border border-forge-border bg-forge-bg/30
+                         hover:border-violet-500/50 hover:bg-violet-600/10 text-forge-muted
+                         hover:text-forge-text transition-all duration-200 cursor-pointer font-medium select-none"
             >
               {p.label}
             </button>
@@ -113,8 +116,8 @@ export default function PersonaBuilder({ onCreated }) {
       </div>
 
       {/* Name input */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-semibold font-display text-forge-text">
+      <div className="space-y-1.5 animate-fade-up">
+        <label className="text-xs font-bold uppercase tracking-wider text-forge-text/80 font-display">
           Persona Name <span className="text-red-400">*</span>
         </label>
         <input
@@ -123,17 +126,17 @@ export default function PersonaBuilder({ onCreated }) {
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Nova, Rex, Lyra…"
           maxLength={60}
-          className="w-full bg-forge-surface border border-forge-border rounded-xl px-4 py-2.5
+          className="w-full bg-forge-surface/50 border border-forge-border/80 rounded-xl px-4 py-2.5
                      text-forge-text placeholder-forge-muted text-sm outline-none
-                     focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
+                     focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15 focus:bg-forge-surface/80 transition-all duration-200"
         />
       </div>
 
       {/* Description input */}
       <div className="space-y-1.5">
-        <label className="text-sm font-semibold font-display text-forge-text">
+        <label className="text-xs font-bold uppercase tracking-wider text-forge-text/80 font-display">
           Backstory / Description
-          <span className="text-forge-muted font-normal ml-1">(optional)</span>
+          <span className="text-forge-muted font-normal normal-case ml-1">(optional)</span>
         </label>
         <textarea
           value={description}
@@ -141,16 +144,16 @@ export default function PersonaBuilder({ onCreated }) {
           placeholder="Give your persona a backstory or role…"
           maxLength={300}
           rows={2}
-          className="w-full bg-forge-surface border border-forge-border rounded-xl px-4 py-2.5
+          className="w-full bg-forge-surface/50 border border-forge-border/80 rounded-xl px-4 py-2.5
                      text-forge-text placeholder-forge-muted text-sm outline-none resize-none
-                     focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
+                     focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15 focus:bg-forge-surface/80 transition-all duration-200"
         />
-        <p className="text-right text-xs text-forge-muted">{description.length}/300</p>
+        <p className="text-right text-[10px] font-mono text-forge-muted font-semibold">{description.length}/300</p>
       </div>
 
       {/* Trait sliders */}
       <div className="space-y-5">
-        <p className="text-xs text-forge-muted font-semibold uppercase tracking-widest">
+        <p className="text-[10px] text-forge-muted font-bold uppercase tracking-widest">
           Personality Traits
         </p>
         {Object.keys(DEFAULT_TRAITS).map((trait) => (
@@ -166,8 +169,8 @@ export default function PersonaBuilder({ onCreated }) {
 
       {/* Error */}
       {error && (
-        <div className="bg-red-900/20 border border-red-800/50 text-red-400 text-sm
-                        rounded-xl px-4 py-3">
+        <div className="bg-red-900/15 border border-red-800/40 text-red-400 text-xs
+                        rounded-xl px-4 py-3 animate-pulse">
           {error}
         </div>
       )}
@@ -176,19 +179,19 @@ export default function PersonaBuilder({ onCreated }) {
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="btn-primary w-full"
+        className="btn-primary w-full bg-gradient-to-tr from-violet-600 to-indigo-650 hover:from-violet-500 hover:to-indigo-550 shadow-md shadow-violet-950/20 py-3 flex items-center justify-center gap-2 cursor-pointer transition-all duration-200"
       >
         {loading ? (
           <>
             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Forging…
+            <span>Forging…</span>
           </>
         ) : (
           <>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="w-4 h-4">
               <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Forge Persona
+            <span className="font-display tracking-wider text-xs font-bold uppercase">Forge Persona</span>
           </>
         )}
       </button>
