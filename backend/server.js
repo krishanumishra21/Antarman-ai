@@ -26,7 +26,20 @@ if (process.env.FRONTEND_URL) {
 }
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or postman)
+    if (!origin) return callback(null, true);
+    
+    const cleanOrigin = origin.replace(/\/$/, "").toLowerCase();
+    const cleanAllowed = allowedOrigins.map(url => url.replace(/\/$/, "").toLowerCase());
+    
+    if (cleanAllowed.includes(cleanOrigin)) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS Blocked] Origin: "${origin}" is not in the allowed list:`, allowedOrigins);
+      callback(null, false);
+    }
+  },
   credentials: true,
 }));
 

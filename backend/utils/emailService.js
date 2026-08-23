@@ -4,11 +4,15 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // Use SSL/TLS
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
 });
 
 /**
@@ -65,7 +69,14 @@ async function sendOtpEmail(email, otp) {
     `,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[SMTP Success] OTP email sent successfully to ${email}. Response: ${info.response}`);
+    return info;
+  } catch (error) {
+    console.error(`[SMTP Error] Failed to send OTP email to ${email}:`, error);
+    throw new Error(`SMTP_ERROR: ${error.message}`);
+  }
 }
 
 module.exports = { sendOtpEmail };

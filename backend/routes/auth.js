@@ -55,11 +55,23 @@ router.post("/send-otp", async (req, res) => {
     await Otp.create({ email: email.toLowerCase().trim(), otp });
 
     // Send email
-    await sendOtpEmail(email.toLowerCase().trim(), otp);
+    try {
+      await sendOtpEmail(email.toLowerCase().trim(), otp);
+    } catch (emailErr) {
+      // Clean up OTP record on sending failure so database is not cluttered with unusable records
+      await Otp.deleteMany({ email: email.toLowerCase().trim() });
+      throw emailErr;
+    }
 
     res.json({ message: "OTP sent to your email." });
   } catch (err) {
     console.error("Send OTP error:", err);
+    if (err.message && err.message.startsWith("SMTP_ERROR:")) {
+      return res.status(502).json({
+        error: "Email delivery failed. Please verify that your SMTP/Gmail App Password environment variables are set correctly on Render.",
+        details: err.message.replace("SMTP_ERROR: ", ""),
+      });
+    }
     res.status(500).json({ error: "Failed to send OTP. Please try again." });
   }
 });
