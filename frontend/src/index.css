@@ -36,12 +36,12 @@
   /* Glowing purple border on focus / active */
   .glow-border {
     border: 1px solid #2A2A3E;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.3s, box-shadow 0.3s;
   }
   .glow-border:focus-within,
   .glow-border:hover {
     border-color: #7C3AED;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15), 0 0 20px rgba(124, 58, 237, 0.08);
   }
 
   /* Purple gradient button */
@@ -49,10 +49,17 @@
     @apply inline-flex items-center justify-center gap-2
            bg-violet-600 hover:bg-violet-500 active:bg-violet-700
            text-white font-semibold rounded-xl px-5 py-2.5
-           transition-all duration-200 cursor-pointer
+           transition-all duration-300 cursor-pointer
            disabled:opacity-40 disabled:cursor-not-allowed;
     font-family: 'Syne', sans-serif;
     letter-spacing: 0.02em;
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3), 0 0 0 1px rgba(124, 58, 237, 0.1);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
   }
 
   /* Ghost button */
@@ -61,13 +68,67 @@
            border border-forge-border hover:border-violet-500
            text-forge-muted hover:text-forge-text
            rounded-xl px-5 py-2.5
-           transition-all duration-200 cursor-pointer;
+           transition-all duration-300 cursor-pointer;
     font-family: 'Syne', sans-serif;
   }
+  .btn-ghost:hover {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.1);
+  }
 
-  /* Card / panel */
+  /* Card / panel with hover glow */
   .forge-card {
     @apply bg-forge-card border border-forge-border rounded-2xl;
+    transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Animated gradient border */
+  .gradient-border {
+    position: relative;
+    overflow: hidden;
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.5), transparent 40%, transparent 60%, rgba(99, 102, 241, 0.5));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .gradient-border:hover::before {
+    opacity: 1;
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(90deg, transparent 25%, rgba(124, 58, 237, 0.08) 50%, transparent 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* Shimmer text */
+  .shimmer-text {
+    background: linear-gradient(90deg, #E2E8F0 0%, #A855F7 25%, #E2E8F0 50%, #A855F7 75%, #E2E8F0 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+  }
+
+  /* Animated gradient text */
+  .gradient-text-animated {
+    background: linear-gradient(270deg, #A855F7, #6366F1, #8B5CF6, #A855F7);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientX 4s ease infinite;
   }
 
   /* Trait slider custom styling */
@@ -79,6 +140,10 @@
     background: #2A2A3E;
     outline: none;
     cursor: pointer;
+    transition: background 0.3s;
+  }
+  input[type='range']:hover {
+    background: #3A3A4E;
   }
   input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -86,13 +151,24 @@
     height: 18px;
     border-radius: 50%;
     background: #7C3AED;
-    box-shadow: 0 0 6px rgba(124, 58, 237, 0.6);
-    transition: transform 0.15s;
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.6), 0 0 20px rgba(124, 58, 237, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
   }
   input[type='range']::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
+    transform: scale(1.25);
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.8), 0 0 30px rgba(124, 58, 237, 0.3);
   }
 }
+
+/* ── Staggered animation delays ──────────────────────────────────────────── */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.4s; }
 
 /* ── Noise texture overlay (adds depth) ─────────────────────────────────── */
 .noise-overlay::before {
@@ -113,6 +189,16 @@
   background: #7C3AED;
   border-radius: 50%;
   animation: typing 1.2s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(124, 58, 237, 0.5);
 }
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Hover card lift effect */
+.hover-lift {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(124, 58, 237, 0.08);
+}
