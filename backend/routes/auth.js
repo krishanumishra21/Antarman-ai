@@ -3,9 +3,12 @@ const express = require("express");
 const router  = express.Router();
 const jwt     = require("jsonwebtoken");
 const crypto  = require("crypto");
+const { OAuth2Client } = require("google-auth-library");
 const User    = require("../models/User");
 const Otp     = require("../models/Otp");
 const { sendOtpEmail } = require("../utils/emailService");
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Helper to generate JWT token
 function generateToken(userId) {
@@ -172,6 +175,69 @@ router.post("/login", async (req, res) => {
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Server error during login." });
+  }
+});
+
+// ── POST /auth/google ──────────────────────────────────────────────────────────
+// Verifies Google JWT ID Token and logs in / registers the user
+router.post("/google", async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ error: "Google credential is required." });
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      return res.status(500).json({
+        error: "Google Client ID is not configured on the server. Please set GOOGLE_CLIENT_ID in the backend environment variables.",
+      });
+    }
+
+    // Verify token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: clientId,
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name } = payload;
+
+    if (!email) {
+      return res.status(400).json({ error: "Google account does not provide an email address." });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if user already exists
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (user) {
+      // User exists. Update googleId if not already set (e.g. if they created account via password first)
+      if (!user.googleId) {
+        user.googleId = googleId;
+        await user.save();
+      }
+    } else {
+      // Create new user (password is not required since googleId is set)
+      user = await User.create({
+        name: name || email.split("@")[0],
+        email: normalizedEmail,
+        googleId,
+      });
+    }
+
+    const token = generateToken(user._id);
+
+    res.json({
+      message: "Authenticated successfully with Google!",
+      token,
+      user: { id: user._id, name: user.name, email: user.email },
+    });
+  } catch (err) {
+    console.error("Google Auth error:", err);
+    res.status(401).json({ error: "Google authentication failed. The token may be invalid or expired." });
   }
 });
 
