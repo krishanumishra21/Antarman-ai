@@ -4,6 +4,7 @@ import { AuthProvider, useAuth }   from "./utils/AuthContext";
 import Layout    from "./components/Layout";
 import HomePage  from "./pages/HomePage";
 import ChatPage  from "./pages/ChatPage";
+import RoomPage  from "./pages/RoomPage";
 import AuthPage  from "./pages/AuthPage";
 
 // Protects routes — redirects to /auth if not logged in
@@ -52,6 +53,12 @@ function AppRoutes() {
       <Route path="/chat/:id" element={
         <PrivateRoute>
           <Layout><ChatPage /></Layout>
+        </PrivateRoute>
+      }/>
+
+      <Route path="/room/:roomId" element={
+        <PrivateRoute>
+          <Layout><RoomPage /></Layout>
         </PrivateRoute>
       }/>
 

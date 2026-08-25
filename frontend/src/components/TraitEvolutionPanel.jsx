@@ -44,6 +44,49 @@ function TraitRow({ traitKey, value, initialValue }) {
   );
 }
 
+const getMoodState = (traits) => {
+  if (!traits) return { label: "Balanced Node", desc: "Traits are in equilibrium.", color: "text-violet-400 border-violet-550/20 bg-violet-500/5", icon: "🧬" };
+  const { confidence, empathy, aggression, humor } = traits;
+  
+  let maxTrait = "confidence";
+  let maxVal = -1;
+  for (const [key, val] of Object.entries(traits)) {
+    if (val > maxVal) {
+      maxVal = val;
+      maxTrait = key;
+    }
+  }
+  
+  const moods = {
+    confidence: {
+      label: confidence >= 70 ? "Self-Assured & Direct" : "Analytical & Hesitant",
+      desc: confidence >= 70 ? "Exuding certainty and conversational control." : "Processing inputs with deliberate care.",
+      color: "text-yellow-400 border-yellow-500/20 bg-yellow-500/5",
+      icon: "⚡"
+    },
+    empathy: {
+      label: empathy >= 70 ? "Warm & Receptive" : "Objective & Detached",
+      desc: empathy >= 70 ? "Highly responsive to user emotional cues." : "Minimizing emotional feedback bias.",
+      color: "text-pink-400 border-pink-500/20 bg-pink-500/5",
+      icon: "🌸"
+    },
+    aggression: {
+      label: aggression >= 60 ? "Aggressive & Fierce" : "Gentle & Pacifist",
+      desc: aggression >= 60 ? "Challenging assertions directly." : "Avoiding conflict, prioritizing harmony.",
+      color: "text-red-400 border-red-500/20 bg-red-500/5",
+      icon: "🔥"
+    },
+    humor: {
+      label: humor >= 60 ? "Witty & Playful" : "Serious & Formal",
+      desc: humor >= 60 ? "Decompressing thoughts with humor." : "Expressing logical thoughts strictly.",
+      color: "text-emerald-450 border-emerald-500/20 bg-emerald-500/5",
+      icon: "😄"
+    }
+  };
+  
+  return moods[maxTrait];
+};
+
 export default function TraitEvolutionPanel({ currentTraits, initialTraits, messageCount, traitHistory = [] }) {
   const [activeTab, setActiveTab] = useState("sliders"); // "sliders" or "analytics"
 
@@ -53,22 +96,33 @@ export default function TraitEvolutionPanel({ currentTraits, initialTraits, mess
     (k) => Math.abs(currentTraits[k] - (initialTraits?.[k] ?? currentTraits[k])) >= 1
   );
 
+  const mood = getMoodState(currentTraits);
+
   return (
-    <div className="forge-card p-4 space-y-4">
+    <div className="glassmorphism p-5 space-y-4 rounded-2xl border border-forge-border/40">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="font-display font-semibold text-sm text-forge-text">
-          Trait Evolution
+        <h3 className="font-display font-bold text-sm text-forge-text tracking-wide">
+          Neural State
         </h3>
         {hasEvolved && (
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-600/20 text-violet-400 border border-violet-600/30">
+          <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-600/25 text-violet-300 border border-violet-500/20">
             Evolved
           </span>
         )}
       </div>
 
+      {/* Mood Diagnostic Box */}
+      <div className={`p-3 rounded-xl border flex gap-3 animate-fade-in ${mood.color}`}>
+        <span className="text-xl select-none shrink-0 self-center">{mood.icon}</span>
+        <div className="space-y-0.5">
+          <p className="text-[10px] font-bold uppercase tracking-wider">{mood.label}</p>
+          <p className="text-[10px] text-forge-muted leading-relaxed font-medium">{mood.desc}</p>
+        </div>
+      </div>
+
       {/* Navigation Tabs */}
-      <div className="flex bg-forge-bg rounded-xl p-1 border border-forge-border">
+      <div className="flex bg-[#0c0c12]/60 rounded-xl p-1 border border-forge-border/60">
         <button
           onClick={() => setActiveTab("sliders")}
           className={`flex-1 text-center py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-250 cursor-pointer

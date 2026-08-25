@@ -40,6 +40,21 @@ const PRESETS = [
   },
 ];
 
+const getArchetype = (traits) => {
+  const { confidence, empathy, aggression, humor } = traits;
+  if (confidence >= 70 && empathy >= 70 && aggression <= 25) return "Wise Mentor 🧙";
+  if (confidence >= 75 && aggression >= 65 && empathy <= 30) return "Ruthless Rebel 😈";
+  if (humor >= 80 && aggression <= 30) return "Joyful Comedian 🤡";
+  if (confidence >= 80 && empathy <= 20 && aggression <= 40) return "Analytical Analyst 🤖";
+  if (empathy >= 80 && confidence <= 40) return "Empathetic Supporter 💜";
+  if (aggression >= 75 && confidence >= 70) return "Fierce Opponent 🔥";
+  if (confidence >= 75) return "Self-Assured Leader ⚡";
+  if (empathy >= 70) return "Kind Counselor 🌸";
+  if (humor >= 70) return "Playful Trickster 😄";
+  if (aggression >= 60) return "Pragmatic Fighter ⚔️";
+  return "Balanced Synthesizer 🧬";
+};
+
 export default function PersonaBuilder({ onCreated }) {
   const [name,        setName]        = useState("");
   const [description, setDescription] = useState("");
@@ -58,6 +73,12 @@ export default function PersonaBuilder({ onCreated }) {
     setName(preset.name);
     setDescription(preset.description);
     setTraits(preset.traits);
+  };
+
+  const isPresetActive = (preset) => {
+    return name === preset.name &&
+           description === preset.description &&
+           Object.keys(preset.traits).every(k => traits[k] === preset.traits[k]);
   };
 
   const handleSubmit = async () => {
@@ -87,11 +108,11 @@ export default function PersonaBuilder({ onCreated }) {
   };
 
   return (
-    <div className={`forge-card p-6 space-y-6 bg-forge-card/40 backdrop-blur-md border shadow-xl relative overflow-hidden
-                     transition-all duration-500
-                     ${success ? "border-emerald-500/50 shadow-emerald-950/20" : "border-forge-border/80"}`}>
+    <div className={`glassmorphism p-6 space-y-6 shadow-xl relative overflow-hidden rounded-2xl
+                     transition-all duration-500 border
+                     ${success ? "border-emerald-500/50 shadow-emerald-950/20" : "border-forge-border/40"}`}>
       {/* Subtle card header glare line */}
-      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
 
       {/* Success overlay flash */}
       {success && (
@@ -107,23 +128,28 @@ export default function PersonaBuilder({ onCreated }) {
       </div>
 
       {/* Preset buttons */}
-      <div className="space-y-2 animate-fade-up stagger-1">
+      <div className="space-y-2.5 animate-fade-up stagger-1">
         <p className="text-[10px] text-forge-muted font-bold uppercase tracking-widest">
           Quick Presets
         </p>
         <div className="grid grid-cols-2 gap-2">
-          {PRESETS.map((p) => (
-            <button
-              key={p.label}
-              onClick={() => applyPreset(p)}
-              className="text-left text-xs px-3 py-2.5 rounded-xl border border-forge-border bg-forge-bg/30
-                         hover:border-violet-500/50 hover:bg-violet-600/10 text-forge-muted
-                         hover:text-forge-text transition-all duration-300 cursor-pointer font-medium select-none
-                         hover:scale-[1.02] hover:shadow-md hover:shadow-violet-950/10 active:scale-[0.98]"
-            >
-              {p.label}
-            </button>
-          ))}
+          {PRESETS.map((p) => {
+            const active = isPresetActive(p);
+            return (
+              <button
+                key={p.label}
+                onClick={() => applyPreset(p)}
+                className={`text-left text-xs px-3.5 py-3 rounded-xl border transition-all duration-300 cursor-pointer font-semibold select-none
+                           hover:scale-[1.02] hover:shadow-md hover:shadow-violet-950/10 active:scale-[0.98]
+                           ${active 
+                             ? "bg-violet-600/20 border-violet-550 text-violet-300 shadow-sm shadow-violet-950/25" 
+                             : "bg-forge-bg/35 border-forge-border/60 text-forge-muted hover:border-violet-500/50 hover:bg-violet-600/10 hover:text-forge-text"
+                           }`}
+              >
+                {p.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -138,9 +164,9 @@ export default function PersonaBuilder({ onCreated }) {
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Nova, Rex, Lyra…"
           maxLength={60}
-          className="w-full bg-forge-surface/50 border border-forge-border/80 rounded-xl px-4 py-2.5
+          className="w-full bg-forge-surface/30 border border-forge-border/60 rounded-xl px-4 py-2.5
                      text-forge-text placeholder-forge-muted text-sm outline-none
-                     focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15 focus:bg-forge-surface/80 transition-all duration-300"
+                     focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15 focus:bg-forge-surface/65 transition-all duration-300"
         />
       </div>
 
@@ -156,18 +182,24 @@ export default function PersonaBuilder({ onCreated }) {
           placeholder="Give your persona a backstory or role…"
           maxLength={300}
           rows={2}
-          className="w-full bg-forge-surface/50 border border-forge-border/80 rounded-xl px-4 py-2.5
+          className="w-full bg-forge-surface/30 border border-forge-border/60 rounded-xl px-4 py-2.5
                      text-forge-text placeholder-forge-muted text-sm outline-none resize-none
-                     focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15 focus:bg-forge-surface/80 transition-all duration-300"
+                     focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15 focus:bg-forge-surface/65 transition-all duration-300"
         />
         <p className="text-right text-[10px] font-mono text-forge-muted font-semibold">{description.length}/300</p>
       </div>
 
       {/* Trait sliders */}
       <div className="space-y-5 animate-fade-up stagger-4">
-        <p className="text-[10px] text-forge-muted font-bold uppercase tracking-widest">
-          Personality Traits
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] text-forge-muted font-bold uppercase tracking-widest">
+            Personality Traits
+          </p>
+          {/* Dynamic Archetype Badge */}
+          <span className="text-[10px] font-bold text-violet-400 bg-violet-550/15 border border-violet-500/20 px-2 py-0.5 rounded-md animate-fade-in">
+            {getArchetype(traits)}
+          </span>
+        </div>
         {Object.keys(DEFAULT_TRAITS).map((trait) => (
           <TraitSlider
             key={trait}

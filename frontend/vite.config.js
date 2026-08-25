@@ -31,6 +31,14 @@ export default defineConfig({
           }
         }
       },
+      "/room": {
+        target: "http://localhost:5000",
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) {
+            return "/index.html";
+          }
+        }
+      },
       "/health": {
         target: "http://localhost:5000",
         bypass: (req) => {

@@ -10,6 +10,7 @@ const mongoose = require("mongoose");
 // Route handlers
 const personaRoutes = require("./routes/persona");
 const chatRoutes    = require("./routes/chat");
+const roomRoutes    = require("./routes/room");
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -58,7 +59,7 @@ app.use((req, _res, next) => {
 app.use("/auth",    require("./routes/auth"));
 app.use("/persona", personaRoutes);
 app.use("/chat",    chatRoutes);
-// Add this line with the other routes:
+app.use("/room",    roomRoutes);
 
 
 // Health-check endpoint (useful for uptime monitors)

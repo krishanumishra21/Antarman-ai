@@ -54,15 +54,23 @@ export default function TraitHistoryChart({ traitHistory = [] }) {
         ""
       );
 
+      // Create SVG Area Path string
+      const firstPoint = points[0];
+      const lastPoint = points[points.length - 1];
+      const areaD = points.length > 0
+        ? `${pathD} L ${lastPoint.x} ${paddingTop + graphHeight} L ${firstPoint.x} ${paddingTop + graphHeight} Z`
+        : "";
+
       return {
         key,
         pathD,
+        areaD,
         points,
         color: TRAIT_THEME[key].color,
         label: TRAIT_THEME[key].label,
       };
     });
-  }, [dataPoints, graphWidth, graphHeight]);
+  }, [dataPoints, graphWidth, graphHeight, paddingTop, graphHeight]);
 
   if (traitHistory.length === 0) {
     return (
@@ -87,16 +95,22 @@ export default function TraitHistoryChart({ traitHistory = [] }) {
   return (
     <div className="space-y-2.5">
       {/* Dynamic SVG Canvas */}
-      <div className="relative bg-forge-bg/60 border border-forge-border rounded-xl p-2 select-none overflow-hidden">
+      <div className="relative bg-[#0A0A0F]/80 border border-forge-border/60 rounded-xl p-2 select-none overflow-hidden">
         <svg
           viewBox={`0 0 ${chartWidth} ${chartHeight}`}
           className="w-full h-auto overflow-visible"
         >
-          {/* Drop-shadow glow filter for lines */}
+          {/* Drop-shadow glow filter for lines + Area Gradients */}
           <defs>
             <filter id="chart-glow" x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.45" />
             </filter>
+            {lines.map((line) => (
+              <linearGradient key={line.key} id={`area-gradient-${line.key}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={line.color} stopOpacity="0.16" />
+                <stop offset="100%" stopColor={line.color} stopOpacity="0" />
+              </linearGradient>
+            ))}
           </defs>
 
           {/* Grid lines (horizontal) */}
@@ -131,6 +145,14 @@ export default function TraitHistoryChart({ traitHistory = [] }) {
           {/* Trait line paths */}
           {lines.map((line) => (
             <g key={line.key}>
+              {/* Area fill */}
+              {line.areaD && (
+                <path
+                  d={line.areaD}
+                  fill={`url(#area-gradient-${line.key})`}
+                  className="transition-all duration-500 ease-out"
+                />
+              )}
               {/* Thick line pathway with glow */}
               <path
                 d={line.pathD}

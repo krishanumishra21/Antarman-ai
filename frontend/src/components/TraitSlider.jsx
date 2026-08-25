@@ -74,6 +74,7 @@ export default function TraitSlider({ trait, value, onChange, disabled }) {
           style={{
             // Dynamic gradient fill behind the thumb
             background: `linear-gradient(to right, ${meta.fill} 0%, ${meta.fill} ${value}%, #2A2A3E ${value}%, #2A2A3E 100%)`,
+            "--trait-color": meta.fill,
           }}
         />
       </div>

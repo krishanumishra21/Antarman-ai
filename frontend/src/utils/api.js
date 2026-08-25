@@ -52,6 +52,25 @@ export const getChatHistory = (personaId) =>
 export const getChatSession = (chatId) =>
   api.get(`/chat/session/${chatId}`);
 
+// ── Room endpoints ───────────────────────────────────────────────────────────
+export const createRoom = (data) =>
+  api.post("/room/create", data);
+
+export const getAllRooms = () =>
+  api.get("/room/all");
+
+export const getRoom = (roomId) =>
+  api.get(`/room/${roomId}`);
+
+export const deleteRoom = (roomId) =>
+  api.delete(`/room/${roomId}`);
+
+export const sendRoomMessage = (roomId, message) =>
+  api.post(`/room/${roomId}/message`, { message });
+
+export const triggerRoomInteraction = (roomId) =>
+  api.post(`/room/${roomId}/interact`);
+
 // ── OTP endpoints ────────────────────────────────────────────────────────────
 export const sendOtp = (email) =>
   api.post("/auth/send-otp", { email });

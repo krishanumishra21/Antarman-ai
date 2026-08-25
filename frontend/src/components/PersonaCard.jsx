@@ -11,6 +11,26 @@ const TRAIT_COLORS = {
   humor:      { bg: "bg-gradient-to-r from-emerald-600 to-emerald-500",text: "text-emerald-400", glow: "rgba(52, 211, 153, 0.3)" },
 };
 
+const DOMINANT_AVATAR_THEMES = {
+  confidence: { bg: "bg-yellow-500/10 border-yellow-500/30", text: "text-yellow-400" },
+  empathy:    { bg: "bg-pink-500/10 border-pink-550/30",   text: "text-pink-400" },
+  aggression: { bg: "bg-red-500/10 border-red-500/30",    text: "text-red-450" },
+  humor:      { bg: "bg-emerald-500/10 border-emerald-500/30",text: "text-emerald-450" },
+};
+
+const getDominantTrait = (traits) => {
+  if (!traits) return "confidence";
+  let maxTrait = "confidence";
+  let maxVal = -1;
+  for (const [key, val] of Object.entries(traits)) {
+    if (val > maxVal) {
+      maxVal = val;
+      maxTrait = key;
+    }
+  }
+  return maxTrait;
+};
+
 function MiniTraitBar({ label, value, colors, animate }) {
   return (
     <div className="space-y-1">
@@ -60,10 +80,14 @@ export default function PersonaCard({ persona, onDelete, index = 0 }) {
     day:   "numeric",
   });
 
+  const dominant = getDominantTrait(traits);
+  const glowClass = `border-glow-${dominant}`;
+  const avatarTheme = DOMINANT_AVATAR_THEMES[dominant] || DOMINANT_AVATAR_THEMES.confidence;
+
   return (
     <div
       ref={cardRef}
-      className={`gradient-border forge-card p-5 flex flex-col gap-4 relative overflow-hidden bg-forge-card/35 backdrop-blur-md border border-forge-border/80 rounded-2xl shadow-md hover-lift hover:border-violet-500/50 hover:shadow-xl hover:shadow-violet-950/20
+      className={`glassmorphism p-5 flex flex-col gap-4 relative overflow-hidden rounded-2xl shadow-md hover-lift hover:shadow-xl ${glowClass}
         ${isVisible ? "animate-fade-up" : "opacity-0"}`}
       style={{ animationDelay: `${index * 0.08}s` }}
     >
@@ -74,10 +98,8 @@ export default function PersonaCard({ persona, onDelete, index = 0 }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           {/* Avatar circle with initials */}
-          <div className="w-10 h-10 rounded-xl bg-violet-650/15 border border-violet-500/30
-                          flex items-center justify-center flex-shrink-0 shadow-inner
-                          animate-glow-pulse">
-            <span className="text-violet-300 font-display font-bold text-sm">
+          <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 shadow-inner animate-glow-pulse ${avatarTheme.bg}`}>
+            <span className={`font-display font-bold text-sm ${avatarTheme.text}`}>
               {name.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -90,7 +112,7 @@ export default function PersonaCard({ persona, onDelete, index = 0 }) {
         {/* Delete button */}
         <button
           onClick={() => onDelete(_id)}
-          className="text-forge-muted hover:text-red-400 border border-transparent hover:border-red-900/30 hover:bg-red-950/20 transition-all duration-300 p-1.5 rounded-xl cursor-pointer hover:scale-110"
+          className="text-forge-muted hover:text-red-400 border border-transparent hover:border-red-950/40 hover:bg-red-950/20 transition-all duration-300 p-1.5 rounded-xl cursor-pointer hover:scale-110"
           title="Delete persona"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
@@ -122,7 +144,7 @@ export default function PersonaCard({ persona, onDelete, index = 0 }) {
       {/* Chat button */}
       <button
         onClick={() => navigate(`/chat/${_id}`)}
-        className="btn-primary w-full mt-1.5 bg-gradient-to-tr from-violet-600 to-indigo-650 hover:from-violet-500 hover:to-indigo-550 shadow-md shadow-violet-950/15 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider font-display cursor-pointer"
+        className="btn-primary w-full mt-1.5 bg-gradient-to-tr from-violet-650 to-indigo-650 hover:from-violet-500 hover:to-indigo-550 shadow-md shadow-violet-950/25 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider font-display cursor-pointer"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="w-4 h-4">
           <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" strokeLinecap="round" strokeLinejoin="round"/>
