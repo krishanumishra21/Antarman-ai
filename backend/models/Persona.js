@@ -41,6 +41,12 @@ userId: {
       humor: { type: Number, default: 40, min: 0, max: 100 },
     },
 
+    // Persistent core memories extracted from user interactions
+    memories: {
+      type: [String],
+      default: [],
+    },
+
     // Timestamp
     createdAt: { type: Date, default: Date.now },
   },

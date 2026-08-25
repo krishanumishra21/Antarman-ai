@@ -7,7 +7,7 @@ import { useParams, useNavigate, Link }              from "react-router-dom";
 import MessageBubble       from "../components/MessageBubble";
 import TypingIndicator     from "../components/TypingIndicator";
 import TraitEvolutionPanel from "../components/TraitEvolutionPanel";
-import { getPersona, sendMessage } from "../utils/api";
+import { getPersona, sendMessage, deletePersonaMemory } from "../utils/api";
 
 export default function ChatPage() {
   const { id }     = useParams();    // personaId from URL
@@ -162,6 +162,10 @@ export default function ChatPage() {
         setCurrentTraits(data.updatedTraits);
         setTraitHistory((prev) => [...prev, data.updatedTraits]);
       }
+
+      if (data.memories) {
+        setPersona((prev) => ({ ...prev, memories: data.memories }));
+      }
     } catch (err) {
       setError(err.response?.data?.error || "Failed to send message. Check your backend.");
       // Remove the optimistic user message on failure
@@ -177,6 +181,15 @@ export default function ChatPage() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const handleDeleteMemory = async (memoryText) => {
+    try {
+      const { data } = await deletePersonaMemory(id, memoryText);
+      setPersona((prev) => ({ ...prev, memories: data.memories }));
+    } catch (err) {
+      console.error("Failed to delete memory:", err);
     }
   };
 
@@ -344,6 +357,41 @@ export default function ChatPage() {
             messageCount={userMessageCount}
             traitHistory={traitHistory}
           />
+        </div>
+
+        {/* Core Memories Store */}
+        <div className="forge-card p-4 space-y-3 bg-forge-card/30 backdrop-blur-sm border-forge-border/60 animate-fade-up stagger-3 flex flex-col min-h-0">
+          <div>
+            <h3 className="text-xs uppercase font-extrabold tracking-wider text-forge-muted select-none">
+              Core Memories
+            </h3>
+            <p className="text-[10px] text-forge-muted mt-0.5 leading-relaxed">
+              Persistently learned facts about you.
+            </p>
+          </div>
+          {(!persona.memories || persona.memories.length === 0) ? (
+            <p className="text-xs text-forge-muted italic py-1 leading-relaxed">
+              No memories recorded yet. Chat more to build context!
+            </p>
+          ) : (
+            <div className="max-h-48 overflow-y-auto pr-1 custom-scrollbar space-y-2">
+              {persona.memories.map((mem, idx) => (
+                <div
+                  key={idx}
+                  className="text-xs text-forge-text bg-forge-surface/40 border border-forge-border/40 rounded-xl p-3 flex items-start justify-between gap-3 group hover:border-violet-500/35 transition-all duration-200"
+                >
+                  <span className="leading-relaxed">🧠 {mem}</span>
+                  <button
+                    onClick={() => handleDeleteMemory(mem)}
+                    className="text-forge-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shrink-0 font-bold px-1"
+                    title="Forget this memory"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Sidebar Actions */}

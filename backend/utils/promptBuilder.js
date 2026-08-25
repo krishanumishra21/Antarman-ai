@@ -83,7 +83,7 @@ function describeHumor(value) {
  * @returns {string} - The system prompt to send as the first message to the OpenAI API
  */
 function buildSystemPrompt(persona) {
-  const { name, description, traits } = persona;
+  const { name, description, traits, memories } = persona;
   const { confidence, empathy, aggression, humor } = traits;
 
   // Build the prompt piece by piece for clarity
@@ -104,14 +104,27 @@ function buildSystemPrompt(persona) {
     describeEmpathy(empathy),
     describeAggression(aggression),
     describeHumor(humor),
+  ];
 
+  // Inject memories if they exist
+  if (memories && memories.length > 0) {
+    lines.push("");
+    lines.push("## Core Memories About User");
+    lines.push("You persistently remember these key facts about the user from past conversations (use this context to maintain relationship continuity):");
+    memories.forEach((mem) => {
+      lines.push(`- ${mem}`);
+    });
+  }
+
+  // Append standard rules
+  lines.push(
     "",
     "## Rules",
     "- Stay in character at ALL times. Never break character.",
     "- Your tone, vocabulary, and response length should all reflect the traits above.",
     "- Do NOT mention that you are an AI unless directly asked. Even then, stay in character.",
-    "- Keep responses concise unless the topic demands depth.",
-  ];
+    "- Keep responses concise unless the topic demands depth."
+  );
 
   // Filter empty lines and join
   return lines.filter((l) => l !== undefined).join("\n");

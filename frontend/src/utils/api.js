@@ -42,6 +42,9 @@ export const getPersona = (id) =>
 export const deletePersona = (id) =>
   api.delete(`/persona/${id}`);
 
+export const deletePersonaMemory = (personaId, memory) =>
+  api.delete(`/persona/${personaId}/memory`, { data: { memory } });
+
 // ── Chat endpoints ───────────────────────────────────────────────────────────
 export const sendMessage = (personaId, message, chatId = null) =>
   api.post(`/chat/${personaId}`, { message, chatId });

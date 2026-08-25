@@ -7,6 +7,7 @@ const auth                  = require("../middleware/auth");
 const { buildSystemPrompt } = require("../utils/promptBuilder");
 const { evolveTraits }      = require("../utils/evolutionEngine");
 const { getChatCompletion } = require("../utils/openaiService");
+const { extractMemory }     = require("../utils/memoryExtractor");
 
 const MEMORY_WINDOW = 10;
 
@@ -34,6 +35,17 @@ router.post("/:personaId", async (req, res) => {
     const updatedTraits = evolveTraits(plainTraits, message);
 
     persona.traits = updatedTraits;
+
+    // Asynchronously extract and append new memories if unique
+    try {
+      const newMemory = await extractMemory(message.trim(), aiReply);
+      if (newMemory && !persona.memories.includes(newMemory)) {
+        persona.memories.push(newMemory);
+      }
+    } catch (memErr) {
+      console.error("Error extracting memory:", memErr);
+    }
+
     await persona.save();
 
     const traitSnapshot = { ...updatedTraits };
@@ -41,7 +53,7 @@ router.post("/:personaId", async (req, res) => {
     chat.messages.push({ role: "assistant", content: aiReply,        traitSnapshot });
     await chat.save();
 
-    res.json({ reply: aiReply, chatId: chat._id, updatedTraits });
+    res.json({ reply: aiReply, chatId: chat._id, updatedTraits, memories: persona.memories });
   } catch (err) {
     console.error("Chat error:", err);
     const detail = err?.response?.data?.error?.message || err?.message || "Unknown error";

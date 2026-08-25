@@ -65,4 +65,22 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// DELETE /persona/:id/memory
+router.delete("/:id/memory", async (req, res) => {
+  try {
+    const { memory } = req.body;
+    if (!memory) return res.status(400).json({ error: "Memory text is required." });
+
+    const persona = await Persona.findOne({ _id: req.params.id, userId: req.user._id });
+    if (!persona) return res.status(404).json({ error: "Persona not found." });
+
+    persona.memories = persona.memories.filter((m) => m !== memory);
+    await persona.save();
+
+    res.json({ message: "Memory deleted.", memories: persona.memories });
+  } catch (err) {
+    res.status(500).json({ error: "Server error." });
+  }
+});
+
 module.exports = router;
